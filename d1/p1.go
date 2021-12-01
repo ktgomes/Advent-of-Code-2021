@@ -13,6 +13,7 @@ func main() {
 		fmt.Println("Can't read file")
 		panic(err)
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	var old int
