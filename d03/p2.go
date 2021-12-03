@@ -4,27 +4,32 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
 
-	const columns int = 5
+	const columns int = 12
 
-	file, err := os.Open("test.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		fmt.Println("Can't read file")
 		panic(err)
 	}
 	defer file.Close()
 
+	// Construct list of original lines so that it can be re-used
 	var originalLines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		originalLines = append(originalLines, scanner.Text())
 	}
 
+	// Used to keep track of updated length of remaining lines
 	oxygenLines := originalLines
-	fmt.Println(oxygenLines)
+
+	// Build which lines should be kept after each columns is evaluated
+	var remainingLines []string
 
 	for i := 0; i < columns; i++ {
 		count := 0
@@ -36,31 +41,31 @@ func main() {
 			}
 		}
 
-		var markForDeletion []int
-
-		for k, line := range oxygenLines {
-			// If 1 is most common, remove columns with 0s
+		for _, line := range oxygenLines {
+			// If 1 is most common or equal, keep columns with 1s
 			if count >= 0 {
-				if line[i] == '0' {
-					markForDeletion = append(markForDeletion, k)
-				}
-			} else { // If 0 is most common, remove columns with 1s
 				if line[i] == '1' {
-					markForDeletion = append(markForDeletion, k)
+					remainingLines = append(remainingLines, line)
+				}
+			} else { // If 0 is most common, keep columns with 0s
+				if line[i] == '0' {
+					remainingLines = append(remainingLines, line)
 				}
 			}
 		}
 
-		for k, value := range markForDeletion {
-			oxygenLines = append(oxygenLines[:value-k], oxygenLines[value+1-k:]...)
+		oxygenLines = remainingLines
+		if len(remainingLines) == 1 {
+			break
 		}
+		remainingLines = nil
 	}
 
-	oxygen := oxygenLines[0]
+	oxygen, _ := strconv.ParseInt(string(oxygenLines[0]), 2, 64)
 	fmt.Println(oxygen)
 
 	co2Lines := originalLines
-	fmt.Println(co2Lines)
+	remainingLines = nil
 
 	for i := 0; i < columns; i++ {
 		count := 0
@@ -72,27 +77,29 @@ func main() {
 			}
 		}
 
-		var markForDeletion []int
-
-		for k, line := range co2Lines {
-			// If 1 is least common, remove columns with 0s
-			if count <= 0 {
+		for _, line := range co2Lines {
+			// If 0 is least common or equal, keep columns with 0s
+			if count >= 0 {
 				if line[i] == '0' {
-					markForDeletion = append(markForDeletion, k)
+					remainingLines = append(remainingLines, line)
 				}
-			} else { // If 0 is least common, remove columns with 1s
+			} else { // If 1 is least common, keep columns with 1s
 				if line[i] == '1' {
-					markForDeletion = append(markForDeletion, k)
+					remainingLines = append(remainingLines, line)
 				}
 			}
 		}
 
-		for k, value := range markForDeletion {
-			co2Lines = append(co2Lines[:value-k], co2Lines[value+1-k:]...)
+		co2Lines = remainingLines
+		if len(co2Lines) == 1 {
+			break
 		}
+		remainingLines = nil
 	}
 
-	co2 := co2Lines[0]
+	co2, _ := strconv.ParseInt(string(co2Lines[0]), 2, 64)
 	fmt.Println(co2)
+
+	fmt.Println(oxygen * co2)
 
 }
