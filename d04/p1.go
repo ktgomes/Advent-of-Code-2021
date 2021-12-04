@@ -43,7 +43,7 @@ func main() {
 
 out:
 	for _, num := range nums {
-		for i, _ := range boards {
+		for i := 0; i < len(boards); i++ {
 			boards[i].update_board(num)
 			if boards[i].bingo() {
 				fmt.Println(boards[i].winning_value(num))
